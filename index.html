@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Hello</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" /> <!-- Style sheet for icons -->
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        /* Styling for the columns */
+
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            box-sizing: border-box;
+
+        }
+
+        .objectMenu {
+            width: 100%; 
+            height: 80px; 
+            background-color: #fefefe;
+            display: grid;
+            grid-template-columns: auto;
+            grid-template-rows: 25px 50px;
+            outline: 1px solid #000000
+
+        }
+
+        .objectMenuTitle {
+            background-color: brown;
+            display: grid;
+            grid-template-columns: 125px 25px;
+
+        }
+
+        .objectMenuBody {
+            height: 100%;
+            display: flex;
+        }
+
+        .objectPropertyButton {
+            width: 80%;
+            height: 80%;
+            margin-left: 10%;
+            margin-top: 10%;
+        }
+
+
+
+    </style>
+
+</head>
+
+<body>
+
+
+    <template>
+
+        <div class="objectMenu" id="object${this.ID}menu">
+
+            <div class="objectMenuTitle">
+                <p style="margin: 0;">Object ${this.ID}</p>
+            </div>
+
+            <div class="objectMenuBody">
+                
+                <div style="width: calc(100% / 3);">
+                    <button id="editObject${this.ID}" onclick="" class="objectPropertyButton">
+
+                    <span class="material-symbols-outlined">edit</span>
+                    </button>
+                </div>
+            
+                <div style="width: calc(100% / 3);">
+                    <button id="editObject${this.ID}" onclick="" class="objectPropertyButton">
+
+                    <span class="material-symbols-outlined">edit</span>
+                    </button>
+                </div>
+            
+                <div style="width: calc(100% / 3);">
+                    <button id="editObject${this.ID}" onclick="" class="objectPropertyButton">
+
+                    <span class="material-symbols-outlined">edit</span>
+                    </button>
+                </div>
+            
+
+                
+            </div>
+
+        </div>
+
+
+    </template>
+    
+    <script src="simulation.js" defer></script>
+    
+    <h1>Iteration 1: basic physics simulation</h1>
+    <p>NEA prototype 1. This is a basic physics simulation that allows the user to input initial conditions and see how an object moves in space.<br> The simulation will calculate the object's position based on the forces applied to it and its mass.</p>   
+    <p> All inputs shoud be given in SI units. 1 pixel represents 1 metre.</p>
+
+
+    <div>
+    <!-- User inputs. Since we would like to stay on the same page, a form is not used here.-->
+
+        <!-- Start position -->
+        <label for="initialX">Initial X coordinate:</label>
+        <input type="number" id="initialX" name="initialX">
+        <label for="initialY">Initial Y coordinate:</label>
+        <input type="number" id="initialY" name="initialY">
+        <br>
+
+        <!-- Initial velocities -->
+        <label for="initialVx">Initial X Velocity:</label>
+        <input type="number" id="initialVx" name="initialVx">
+        <label for="initialVy">Initial Y Velocity:</label>
+        <input type="number" id="initialVy" name="initialVy">
+        <br>
+
+        <!-- Force -->
+        <label for="FrX">Force X:</label>
+        <input type="number" id="FrX" name="FrX">
+        <label for="FrY">Force Y:</label>
+        <input type="number" id="FrY" name="FrY">
+        <!-- Fr means resultant force, one for each axis -->
+        <br>
+
+        <!-- Mass-->
+        <label for="mass">Mass:</label>
+        <input type="number" id="mass" name="mass">
+
+        <!-- Timestamp-->
+        <label for="dt">Timestamp:</label>
+        <input type="number" id="dt" name="dt">
+        <br><br>
+
+        <!-- Psuedo-submit  button, works as a submit button but stays on the current page -->
+        <button type="button" onclick = "runSimulation()" id="runSimulation">Run simulation</button>
+        <button type="button" onclick = "stopSimulation(simulation)" id="stopSimulation">Stop</button>
+    </div>
+
+
+
+
+    <!-- Canvas + sidebars -->
+
+    <div style="display: flex; flex-direction: row;">
+        <br>
+        <div id="objectCreation" style="background-color: aqua; width: 15%;">
+            <div>Object creation</div>
+
+            <div id="objectListContainer"></div>
+
+
+            <div id="newObjectButtonContainer" style="width: 100%; height: 30px;">
+                <button style="width: 100%; margin-top: 5px;" onclick="new Projectile()">+ New Object</button>
+            </div>
+        </div>
+
+
+
+        
+        <div id="canvasContainer" style="background-color: #00ff00; width: 70%;">
+            <!-- Space canvas -->
+            <canvas id="canvas" style="border: 1px solid #000000; transform: scaleY(-1);"></canvas>
+
+
+        </div>
+
+        <div id="forceCreation" width: 15%;>
+            <!-- Embed force creation pane -->
+
+            <div style="background-color: aqua; width: 100%;">Force creation</div>
+        </div>
+    </div>
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!-- 
+
+<div id="objectContainer" style="width: 100%;">
+    
+                <div id="objectMenu" style="
+                    width: 100%; 
+                    height: 80px; 
+                    background-color: #fefefe;
+                    display: grid;
+                    grid-template-columns: auto;
+                    grid-template-rows: 25px 50px;
+                    outline: 1px solid #000000">
+
+                    <div id="objectMenuTitle" style="
+                        background-color: brown;
+                        display: grid;
+                        grid-template-columns: 125px 25px;
+                        ">
+                        <div style="
+                            height: 25px;
+                            display: grid;
+                            align-items: center;
+                            justify-items: start; 
+                            padding-left: 5px;
+                        ">
+                            <p style="margin: 0;">Title</p>
+                        </div>
+                    </div>
+
+                    <div id="objectMenuBody" style="
+                        height: 100%;
+                        display: flex;">
+
+                        <div style="width: calc(100% / 3);">
+                            
+                            <button id="editObject" onclick="" style="
+                                width: 80%;
+                                height: 80%;
+                                margin-left: 10%;
+                                margin-top: 10%;
+                                ">
+
+                            <span class="material-symbols-outlined">edit</span>
+                            </button>
+                        </div>
+
+                        <div style="width: calc(100% / 3);  height: 100%;">
+                            
+                            <button id="editObject" onclick="" style="
+                                width: 80%;
+                                height: 80%;
+                                margin-left: 10%;
+                                margin-top: 10%;
+                                ">
+
+                            <span class="material-symbols-outlined">content_paste</span>
+                            </button>
+                        </div>
+
+                        <div style="width: calc(100% / 3); height: 100%;">
+                            
+                            <button id="editObject" onclick="" style="
+                                width: 80%;
+                                height: 80%;
+                                margin-left: 10%;
+                                margin-top: 10%;
+                                ">
+
+                            <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    </div>
+            </div>
+
+-->
