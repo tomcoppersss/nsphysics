@@ -24,8 +24,9 @@
         }
 
         .objectMenu {
-            width: 100%; 
-            height: 80px; 
+            width: 100%;
+            max-width: 100%;
+            height: 100%; 
             background-color: #fefefe;
             display: grid;
             grid-template-columns: auto;
@@ -35,13 +36,15 @@
         }
 
         .objectMenuTitle {
+            max-width: 100%;
             background-color: brown;
             display: grid;
-            grid-template-columns: 125px 25px;
+            grid-template-columns: calc(100% * 5 / 6) calc(100% / 6);
 
         }
 
         .objectMenuBody {
+            max-width: 100%;
             height: 100%;
             display: flex;
         }
@@ -61,6 +64,10 @@
 
 <body>
 
+
+
+
+    <!-- Object template -->
 
     <template>
 
@@ -98,11 +105,14 @@
             </div>
 
         </div>
-
-
     </template>
-    
-    <script src="simulation.js" defer></script>
+
+
+
+
+
+
+    <script src="C:/Users/thoma/.vscode/NEA%20from%2026%20July/simulation.js" defer></script>
     
     <h1>Iteration 1: basic physics simulation</h1>
     <p>NEA prototype 1. This is a basic physics simulation that allows the user to input initial conditions and see how an object moves in space.<br> The simulation will calculate the object's position based on the forces applied to it and its mass.</p>   
@@ -151,18 +161,23 @@
 
 
 
-    <!-- Canvas + sidebars -->
+    <!-- Canvas + sidebars container -->
 
     <div style="display: flex; flex-direction: row;">
         <br>
+
+
+        <!-- Object creation sidebar -->
+
         <div id="objectCreation" style="background-color: aqua; width: 15%;">
-            <div>Object creation</div>
-
-            <div id="objectListContainer"></div>
+            <div style="height: 10%; background-color: red;">Object creation</div>
 
 
-            <div id="newObjectButtonContainer" style="width: 100%; height: 30px;">
-                <button style="width: 100%; margin-top: 5px;" onclick="new Projectile()">+ New Object</button>
+            <!-- Needs to be a scroll-box -->
+            <div id="objectListContainer" style="height: 80%; max-height: 80%; overflow-y: scroll; overflow-x: hidden;"></div>
+
+            <div id="newObjectButtonContainer" style="width: 100%; height: 10%; background-color: red;">
+            <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;"  onclick="new Projectile()">+ New Object</button>
             </div>
         </div>
 
@@ -172,11 +187,9 @@
         <div id="canvasContainer" style="background-color: #00ff00; width: 70%;">
             <!-- Space canvas -->
             <canvas id="canvas" style="border: 1px solid #000000; transform: scaleY(-1);"></canvas>
-
-
         </div>
 
-        <div id="forceCreation" width: 15%;>
+        <div id="forceCreation" style="width: 15%;">
             <!-- Embed force creation pane -->
 
             <div style="background-color: aqua; width: 100%;">Force creation</div>
@@ -188,16 +201,6 @@
 
 
 </body>
-</html>
-
-
-
-
-
-
-
-
-
 
 <!-- 
 
@@ -274,3 +277,5 @@
             </div>
 
 -->
+
+</html>
