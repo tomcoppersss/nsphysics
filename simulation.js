@@ -12,8 +12,6 @@ ctx.fillStyle = "#ff0000";
 let simulation = null;
 let objectArray = Array(10);
 
-let objectHTMLTemplate = // using ` in place of " or ' allows for multi-line strings
-``;
 
 // Event listeners
 
@@ -26,6 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("done");
     console.log(canvasContainer.height, objectCreation.height);
 })
+
+window.addEventListener('resize', () => {
+    let objectMenus = document.getElementsByClassName('objectMenu');
+    let objectContainer = document.getElementById('objectCreation');
+
+})
+
+// Validation functions
+
+
 
 
 
@@ -50,91 +58,64 @@ class Projectile {
         this.colour = '#ff0000';
         
         // Add to array
-        this.ID = Number(objectArray.length) + 1;
+        this.ID = objectArray.filter(item => item !== undefined && item !== null).length + 1; // Returns the no. items in the array that are not null/undefined
         objectArray.push(this);
 
         this.name = `Object ${this.ID}`;
 
-        // Add HTML to object list
+        // Add HTML to object list container
         let objectListContainer = document.getElementById('objectListContainer');
-        let newObjectDiv = document.createElement('div')
+        let newObjectDiv = document.createElement('div');
         objectListContainer.appendChild(newObjectDiv);
         newObjectDiv.innerHTML = `
         
-        <div id="objectContainer" style="width: 100%;">
+    <div id="object${this.ID}Container" style="width: 100%; height: 20%;">
     
-                <div id="objectMenu" style="
-                    width: 100%; 
-                    height: 80px; 
-                    background-color: #fefefe;
-                    display: grid;
-                    grid-template-columns: auto;
-                    grid-template-rows: 25px 50px;
-                    outline: 1px solid #000000">
+                <div id="object${this.ID}Menu" class="objectMenu">
 
-                    <div id="objectMenuTitle" style="
-                        background-color: brown;
-                        display: grid;
-                        grid-template-columns: 125px 25px;
-                        ">
+                    <div id="object${this.ID}MenuTitle" class="objectMenuTitle">
+
+                        <!-- Title div below -->
                         <div style="
-                            height: 25px;
+                            height: 100%;
                             display: grid;
                             align-items: center;
                             justify-items: start; 
-                            padding-left: 5px;
+                            padding-left: 20%;
                         ">
-                            <p id="objectTitle" style="margin: 0;">Name</p>
+                            <p id="object${this.ID}Title" style="margin: 0;">${this.name}</p>
                         </div>
                     </div>
 
-                    <div id="objectMenuBody" style="
-                        height: 100%;
-                        display: flex;">
+                    <div id="object${this.ID}MenuBody" class="objectMenuBody">
 
-                        <div style="width: calc(100% / 3);">
+                        <div style="width: calc(100% / 3);  background-color: bisque;">
                             
-                            <button id="editObject" onclick="" style="
-                                width: 80%;
-                                height: 80%;
-                                margin-left: 10%;
-                                margin-top: 10%;
-                                ">
+                            <button id="editObject${this.ID}" onclick="" class="objectPropertyButton">
 
                             <span class="material-symbols-outlined">edit</span>
                             </button>
                         </div>
 
-                        <div style="width: calc(100% / 3);  height: 100%;">
+                        <div style="width: calc(100% / 3);">
                             
-                            <button id="editObject" onclick="" style="
-                                width: 80%;
-                                height: 80%;
-                                margin-left: 10%;
-                                margin-top: 10%;
-                                ">
-
+                            <button id="copyObject${this.ID}" onclick="" class="objectPropertyButton">
                             <span class="material-symbols-outlined">content_paste</span>
                             </button>
+
                         </div>
 
-                        <div style="width: calc(100% / 3); height: 100%;">
+                        <div style="width: calc(100% / 3);">
                             
-                            <button id="editObject" onclick="" style="
-                                width: 80%;
-                                height: 80%;
-                                margin-left: 10%;
-                                margin-top: 10%;
-                                ">
-
+                            <button id="deleteObject${this.ID}" onclick="" class="objectPropertyButton">
                             <span class="material-symbols-outlined">delete</span>
                             </button>
+
                         </div>
                     </div>
             </div>
             `;
-            
-            document.getElementById('objectTitle').innerHTML = this.name;
+
 
     }
 
@@ -183,7 +164,6 @@ function stopSimulation(simulation) {
 
 function runSimulation() {
 
-
     const dt = document.getElementById("dt").value; // Timestamp in s
     stopSimulation(simulation);
 
@@ -206,6 +186,6 @@ function runSimulation() {
     simulation = setInterval(() => {
         clearCanvas(ctx, canvas.width, canvas.height);
         projectile.updatePos(ctx, dt);
-    }, dt * 1000);  
+    }, dt * 1000);
 
     }
