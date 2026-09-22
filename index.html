@@ -6,16 +6,19 @@
     <title>NS physics simulation</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="physics, simulation, norwich school, 2d">
+    <meta name="description" content="A 2d physics simulation for use by the Norwich School Physics Department.">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 
-
-    <!-- Style sheet for icons -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <!-- Main style sheet -->
+    <link rel="stylesheet" href="style.css">
 
 
 
@@ -31,7 +34,45 @@
 
 <div id="zIndex0" style="width: 100vw; height: 100vh;">
     
-    <header style="background-color: #14151F; height: 10vh; width: 100%; margin: 0;">
+    <header style="background-color: #14151F; height: 10vh; width: 100%; margin: 0; display: flex;">
+        <div style="width: 25%; background-color: grey; display: flex; align-items: center;">
+            <!-- Title -->
+            <p style="font-size: 35px; margin: 10px;">NS physics simulation</p>
+        </div>
+
+        <div style="width: 25%; display: flex; align-items: center; justify-content: center;">
+            <!-- Buttons -->
+            <button type="button" id="playPauseSimulation" data-action="playPauseSimulation" style="width: 75px; height: 75px;">
+                <span style="font-size: 50px;" class="material-symbols-outlined">play_pause</span>
+            </button>
+            <button type="button" data-action="stopSimulation" style="width: 75px; height: 75px; margin-left: 10px;">
+                <span style="font-size: 50px;" class="material-symbols-outlined">stop_circle</span>
+            </button>
+            <button type="button" data-action="runSimulation" style="width: 75px; height: 75px; margin-left: 10px;"></button>
+            <button type="button" data-action="runSimulation" style="width: 75px; height: 75px; margin-left: 10px;"></button>
+
+
+        </div>
+
+        <div style="width: 25%; background-color: grey; display: flex; flex-direction: column;">
+            <!-- Select sim -->
+            <div style="width: 50%; height: 100%; display: flex; justify-content: center; align-items: center;">
+                <!-- Pre made sims-->
+                <select id="selectSim" data-lastSelected="Create your own" style="width: 75%; height: 50%;">
+                    <option selected>Select sim:</option>
+                    <option>Projectile motion</option>
+                    <option>Momentum</option>
+                    <option>Create your own</option>
+                </select>
+            </div>
+
+
+
+        </div>
+
+        <div style="width: 25%;">
+            <!-- Settings button etc -->
+        </div>
     </header>
 
 
@@ -44,22 +85,49 @@
 
         <!-- Object creation sidebar -->
 
-        <div id="objectCreation" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
-            <div style="height: 10%; background-color: #191A25;">Object creation</div>
+        <div id="leftSidebar" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
 
+            <div style="height: 10%; background-color: #191A25;"><p>Edit cannon</p></div>
 
-            <div id="objectListContainer" style="height: 80%; max-height: 80%; overflow-y: scroll;">
+            <div style="height: 80%; max-height: 80%; overflow-y: scroll; display: flex; flex-direction: column;">
                 
-                
+                <div style="height: 50%;">
+                    <div style="height: 10%;">
+                        <p>Edit cannon</p>
+                    </div>
+                    <div class="propertyGrid">
+
+                        <label for="editCannonAngle">Cannon angle</label>
+                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
+
+                        <label for="editCannonballSpeed">Cannonball speed</label>
+                        <input id="editCannonballSpeed" type="number" name="cannonBallSpeed" value="${cannon.cannonballSpeed}">
+
+                        <label for="editCannonHeight">Cannon height</label>
+                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
+                        
+                        <label for="editCannonAngle"></label>
+                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
+
+                    </div>
+                </div>
+
+                <div style="height: 50%;">
+                    <div style="height: 10%;">
+                        <p>Edit cannon</p>
+                    </div>
+                    <div class="propertyGrid">
 
 
+                    </div>
+                    
+                </div>
             </div>
-
-
 
             <div id="newObjectButtonContainer" style="width: 100%; height: 10%; background-color: #191A25;">
             <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Object</button>
             </div>
+
         </div>
 
 
@@ -73,21 +141,36 @@
 
 
 
-        <div id="forceCreation" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
+        <div id="rightSidebar" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
             <div style="height: 10%; background-color: #191A25;">Force creation</div>
 
-
-            <!-- Needs to be a scroll-box -->
             <div id="forceListContainer" style="height: 80%; max-height: 80%; overflow-y: scroll;">
-                
             </div>
 
             <div id="newForceButtonContainer" style="width: 100%; height: 10%; background-color: #191A25;">
             <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Force</button>
             </div>
         </div>
+
     </div>
 
+
+    <template id="saveSimReminder">
+        <div style="position: fixed; z-index: 100; transform: translate(-50%, -25%); top: 25%; left: 50%; width: 20vw; aspect-ratio: 4 / 3; background-color: #2D3142; display: flex; flex-direction: column;">
+            <div style="width: 100%; height: calc(100% / 3); display: flex; align-items: center; justify-content: center;">
+                <p>Are you sure you want to proceed?</p>
+            </div>
+
+            <div style="width: 100%; height: calc(100% / 3); display: flex; align-items: center; justify-content: center;">
+                <p>Proceeding without saving the simulation can lead to data loss!</p>
+            </div>
+
+            <div>
+
+            </div>
+        </div>
+
+    </template>
 
 </div>
 
