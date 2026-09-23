@@ -40,7 +40,7 @@
             <p style="font-size: 35px; margin: 10px;">NS physics simulation</p>
         </div>
 
-        <div style="width: 25%; display: flex; align-items: center; justify-content: center;">
+        <div id="simulationButtonsContainer" style="width: 25%; display: flex; align-items: center; justify-content: center;">
             <!-- Buttons -->
             <button type="button" id="playPauseSimulation" data-action="playPauseSimulation" style="width: 75px; height: 75px;">
                 <span style="font-size: 50px;" class="material-symbols-outlined">play_pause</span>
@@ -79,55 +79,29 @@
 
     <!-- Canvas + sidebars container -->
 
+
     <div style="display: flex; flex-direction: row; height: 90vh;">
         <br>
 
 
         <!-- Object creation sidebar -->
 
-        <div id="leftSidebar" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
+        <div id="objectCreation" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
+            <div style="height: 10%; background-color: #191A25;">Object creation</div>
 
-            <div style="height: 10%; background-color: #191A25;"><p>Edit cannon</p></div>
 
-            <div style="height: 80%; max-height: 80%; overflow-y: scroll; display: flex; flex-direction: column;">
+            <div id="objectListContainer" style="height: 80%; max-height: 80%; overflow-y: scroll;">
                 
-                <div style="height: 50%;">
-                    <div style="height: 10%;">
-                        <p>Edit cannon</p>
-                    </div>
-                    <div class="propertyGrid">
-
-                        <label for="editCannonAngle">Cannon angle</label>
-                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
-
-                        <label for="editCannonballSpeed">Cannonball speed</label>
-                        <input id="editCannonballSpeed" type="number" name="cannonBallSpeed" value="${cannon.cannonballSpeed}">
-
-                        <label for="editCannonHeight">Cannon height</label>
-                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
-                        
-                        <label for="editCannonAngle"></label>
-                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
-
-                    </div>
-                </div>
-
-                <div style="height: 50%;">
-                    <div style="height: 10%;">
-                        <p>Edit cannon</p>
-                    </div>
-                    <div class="propertyGrid">
+                
 
 
-                    </div>
-                    
-                </div>
             </div>
+
+
 
             <div id="newObjectButtonContainer" style="width: 100%; height: 10%; background-color: #191A25;">
             <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Object</button>
             </div>
-
         </div>
 
 
@@ -141,18 +115,21 @@
 
 
 
-        <div id="rightSidebar" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
+        <div id="forceCreation" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
             <div style="height: 10%; background-color: #191A25;">Force creation</div>
 
+
+            <!-- Needs to be a scroll-box -->
             <div id="forceListContainer" style="height: 80%; max-height: 80%; overflow-y: scroll;">
+                
             </div>
 
             <div id="newForceButtonContainer" style="width: 100%; height: 10%; background-color: #191A25;">
             <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Force</button>
             </div>
         </div>
-
     </div>
+
 
 
     <template id="saveSimReminder">
@@ -172,9 +149,114 @@
 
     </template>
 
+    
+
+
+    
+
+  
+
+
+        
+
+
+
+
 </div>
 
 </body>
 
 
 </html>
+
+<!-- Sort out later -->
+
+    <!-- <div style="display: flex; flex-direction: row; height: 90vh;">
+        <br>
+
+
+        Object creation sidebar
+
+        <div id="leftSidebar" style="background-color: #1E1F2B; width: 15%; overflow-x: auto;">
+            
+            
+            <div style="height: 10%; background-color: #191A25;"><p>Object creation</p></div>
+
+                <div id="objectListContainer" style="height: 80%; max-height: 80%; overflow-y: scroll;">
+                    
+                </div>
+
+                <div id="newObjectButtonContainer" style="width: 100%; height: 10%; background-color: #191A25;">
+                <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Object</button>
+                </div>
+
+
+
+            
+            
+            
+
+        <div style="height: 10%; background-color: #191A25;"><p>Edit cannon</p></div>
+
+            <div style="height: 80%; max-height: 80%; overflow-y: scroll; display: flex; flex-direction: column;">
+                
+                <div style="height: calc(100% / 3);">
+                    <div style="height: 10%;">
+                        <p>Edit cannon</p>
+                    </div>
+                    <div class="propertyGrid">
+
+                        <label for="editCannonAngle">Cannon angle</label>
+                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
+
+                        <label for="editCannonballSpeed">Cannonball speed</label>
+                        <input id="editCannonballSpeed" type="number" name="cannonballSpeed" value="${cannon.cannonballSpeed}">
+
+                        <label for="editCannonHeight">Cannon height</label>
+                        <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
+                        
+                    </div>
+                </div>
+
+                <div style="height: calc(100% / 3);">
+                    <div style="height: 10%;">
+                        <p>Edit world</p>
+                    </div>
+                    <div class="propertyGrid">
+                        
+                        <label for="editGravity">Gravity</label>
+                        <input id="editGravity" type="number" name="gravity" value="${gravity}">
+
+                        <label for="editAirResistance">Air resistance</label>
+                        <input editAirResistance="edit" type="number" name="airResistance" value="${airResistance}">
+
+                        <label for="showVectors">Show vectors</label>
+                        <input id="showVectors" type="checkbox" name="showVectors">
+
+                        <label for="showProjectilePath">Show projectile path</label>
+                        <input id="showProjectilePath" type="checkbox" name="showProjectilePath">
+                        
+                    </div>
+                </div>
+
+                <div style="height: calc(100% / 3);">
+                    <div style="height: 10%;">
+                        <p>Edit projectiles</p>
+                    </div>
+                    <div class="propertyGrid">
+
+                        <label for="editProjectileMass">Projectile mass</label>
+                        <input id="editProjectileMass" type="number" name="projectileMass">
+
+                        <label for="editProjectileSize">Projectile size</label>
+                        <input id="editProjectileSize" type="number" name="projectileSize">
+                        
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div id="newObjectButtonContainer" style="width: 100%; height: 10%; background-color: #191A25;">
+            <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Object</button>
+            </div> -->
