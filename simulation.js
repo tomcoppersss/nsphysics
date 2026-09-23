@@ -4,6 +4,8 @@ let simulationID;
 let isRunning = false;
 
 
+// General sim
+
 // Keys are stored as strings in the maps below
 
 // Access objects/forces by their IDs
@@ -18,7 +20,6 @@ let objectToForces = new Map();
 
 // objects by FORCE (get it??)
 let forceToObjects = new Map();
-
 
 
 // Canvas initialisation 
@@ -195,7 +196,11 @@ function initialiseSimulation(selectElement) {
 
     window.addEventListener('resize', resizeCanvas);
 
-    document.getElementById('playPauseSimulation').addEventListener('click', playPauseSimulation);
+    document.getElementById('simulationButtonsContainer').addEventListener('click', e => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        globalThis[btn.dataset.action]();
+    })
 
     document.getElementById('selectSim').addEventListener('change', e => {
         const selectElement = document.getElementById('selectSim');
@@ -216,7 +221,7 @@ function initialiseSimulation(selectElement) {
     document.getElementById('newObjectButtonContainer').addEventListener('click', e => {
         const btn = e.target.closest('button');
         if (!btn) return;
-        new Projectile(null);
+        new GeneralSimObject(null);
     });
 
     document.getElementById('forceListContainer').addEventListener('click', e => {
@@ -236,18 +241,19 @@ function initialiseSimulation(selectElement) {
 // Validation functions
 
 
+// Classes
 
 
+// General sim 
 
-
-class Projectile {
+class GeneralSimObject {
     
     static nextID = 0;
 
     constructor(projectileToCopy) { // projectileToCopy is not necessarily needed here
 
         // Add to object maps
-        this.ID = String(++Projectile.nextID);
+        this.ID = String(++GeneralSimObject.nextID);
         objects.set(this.ID, this);
         objectToForces.set(this, []);
         this.name = `Object ${this.ID}`;
@@ -398,6 +404,10 @@ class Projectile {
                             `;
 
         }
+
+        Object.keys(this.initial).forEach(key => {
+            this.current[key] = this.initial[key];
+        })
 
         this.draw(ctx);
 
@@ -567,7 +577,7 @@ class Projectile {
     }
 
     copy() {
-        new Projectile(this);
+        new GeneralSimObject(this);
     }
     
     delete() {
@@ -928,6 +938,18 @@ class Force {
 }
 
 
+class Projectile {
+
+    constructor(mass, size) {
+
+        this.mass = document.getElementById('editProjectileMass');
+        this.size = document.getElementById('editProjectileSize');
+
+    }
+}
+
+
+
 function detectCollision(a, b) {
     const dx = a.current.x - b.current.x;
     const dy = a.current.y - b.current.y;
@@ -1076,6 +1098,7 @@ function pauseSimulation() {
 }
 
 function stopSimulation() {
+    console.log('stop');
     pauseSimulation();
     clearCanvas();
     objects.forEach(obj => {
