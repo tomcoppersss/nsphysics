@@ -32,7 +32,7 @@ p, label, input, select, button, h1, h2 {
     color: #F2F3F7;
 }
 
-input, select {
+input[type="text"], input[type="number"], select {
     background-color: #2D3142;
     border: none;
     outline: none;
@@ -41,6 +41,10 @@ input, select {
     height: 20px;
     padding: 0 12px;
     line-height: 20px;
+}
+
+input[type="checkbox"] {
+    
 }
 
 
