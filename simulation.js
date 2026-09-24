@@ -137,13 +137,19 @@ function drawOutline(obj) {
 
 function initialiseSimulation(selectElement) {
 
-    selectElement.dataset.lastSelected = selectElement.value;
+    console.log('sdgfji');
 
         switch (selectElement.value) {
             case selectElement.dataset.lastSelected:
+                console.log('pp');
+
+                selectElement.dataset.lastSelected = selectElement.value;
+
                 break; // do nothing if select same one
             case 'Create your own':
                 // initialise empty general sim
+
+                selectElement.dataset.lastSelected = selectElement.value;
 
 
 
@@ -173,14 +179,80 @@ function initialiseSimulation(selectElement) {
 
                 break;
             case 'Projectile motion':
+                
+                selectElement.dataset.lastSelected = selectElement.value;
+
+                console.log('ballz');
+
+                let cannon = new Cannon();
                 // intiialise projectile motion sim
 
                 let leftSidebar = document.getElementById('leftSidebar');
                 let rightSidebar = document.getElementById('rightSidebar');
 
+
                 leftSidebar.innerHTML = `
                 
+                <div style="height: 10%; background-color: #191A25;"><p>Edit cannon</p></div>
 
+                <div style="height: 80%; max-height: 80%; overflow-y: scroll; display: flex; flex-direction: column;">
+                    
+                    <div style="height: calc(100% / 3);">
+                        <div style="height: 10%;">
+                            <p>Edit cannon</p>
+                        </div>
+                        <div class="propertyGrid">
+
+                            <label for="editCannonAngle">Cannon angle</label>
+                            <input id="editCannonAngle" type="number" name="cannonAngle" value="${cannon.angle}">
+
+                            <label for="editCannonballSpeed">Cannonball speed</label>
+                            <input id="editCannonballSpeed" type="number" name="cannonballSpeed" value="${cannon.cannonballSpeed}">
+
+                            <label for="editCannonHeight">Cannon height</label>
+                            <input id="editCannonHeight" type="number" name="cannonAngle" value="${cannon.angle}">
+                            
+                        </div>
+                    </div>
+
+                    <div style="height: calc(100% / 3);">
+                        <div style="height: 10%;">
+                            <p>Edit world</p>
+                        </div>
+                        <div class="propertyGrid">
+                            
+                            <label for="editGravity">Gravity</label>
+                            <input id="editGravity" type="number" name="gravity" value="${gravity}">
+
+                            <label for="editAirResistance">Air resistance</label>
+                            <input editAirResistance="edit" type="number" name="airResistance" value="${airResistance}">
+
+                            <label for="showVectors">Show vectors</label>
+                            <input id="showVectors" type="checkbox" name="showVectors">
+
+                            <label for="showProjectilePath">Show projectile path</label>
+                            <input id="showProjectilePath" type="checkbox" name="showProjectilePath">
+                            
+                        </div>
+                    </div>
+
+                    <div style="height: calc(100% / 3);">
+                        <div style="height: 10%;">
+                            <p>Edit projectiles</p>
+                        </div>
+                        <div class="propertyGrid">
+
+                            <label for="editProjectileMass">Projectile mass</label>
+                            <input id="editProjectileMass" type="number" name="projectileMass">
+
+                            <label for="editProjectileSize">Projectile size</label>
+                            <input id="editProjectileSize" type="number" name="projectileSize">
+                            
+                        </div>
+                    </div>
+
+
+                </div>
 
                 `;
 
@@ -745,7 +817,6 @@ class Force {
             }
 
         }
-    
 
     saveChanges() {
         // Captures inputs from the edit menu and saves them
@@ -898,8 +969,6 @@ class Force {
         })
     }
 
-
-
     addAffectedObjects() {
 
         
@@ -940,12 +1009,67 @@ class Force {
 
 class Projectile {
 
-    constructor(mass, size) {
+    constructor(launchAngle, launchVelocity) {
 
         this.mass = document.getElementById('editProjectileMass');
         this.size = document.getElementById('editProjectileSize');
+        this.launchAngle = launchAngle * (Math.PI / 180); // convert to rad
+        this.launchVelocity = launchVelocity;
+
+        this.x = Number();
+        this.y = Number();
+        this.Vx = this.launchVelocity * Math.cos(launchAngle);
+        this.Vy = this.launchVelocity * Math.sin(launchAngle);
+
+        this.surfaceArea = Math.PI * this.size; // section normal to incoming airflow, or 1/2 the circumference
+    }
+
+    updatePos() { 
+
+        if (airResistance !== 0) {
+            const dragForceX = airResistance * this.surfaceArea * (this.Vx ** 2);
+            const dragForceY = airResistance * this.surfaceArea * (this.Vy ** 2);
+
+            // sum resistive forces
+            this.Vx -= (dragForceX/this.mass) / 60 // dt is 1/60 s
+            this.Vy -= (dragForceY/this.mass) // 60
+        }
+
+            this.Vy -= (9.81 / 60);
+
+            this.x += this.Vx / 60;
+            this.y += this.Vy / 60;
+    } 
+
+    draw(ctx) {
+
+        ctx.fillStyle = "#222222";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+        ctx.fill();
+        
+    }
+
+    
+}
+
+
+class Cannon {
+    
+    constructor(cannonAngle, cannonballSpeed, cannonHeight) {
+        this.cannonAngle = cannonAngle;
+        this.cannonballSpeed = cannonballSpeed;
+        this.cannonHeight = cannonHeight;
+    }
+
+    draw() {
 
     }
+
+    fire() {
+
+    }
+
 }
 
 
