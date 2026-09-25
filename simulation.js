@@ -1,5 +1,6 @@
 // Global variables
 
+let simulation;
 let simulationID;
 let isRunning = false;
 
@@ -102,7 +103,7 @@ function resizeCanvas() {
     updateCanvas();
     const forceOverlay = document.getElementsByClassName('addObjectsToForceOverlay')[0];
     if (forceOverlay) {
-        forceToObjects.get(forces.get(parseInt(forceOverlay.id))).forEach(object => {
+        simulation.forceToObjects.get(simulation.forces.get(parseInt(forceOverlay.id))).forEach(object => {
             object.drawOutline();
         })
     }
@@ -112,7 +113,7 @@ resizeCanvas();
 
 function updateCanvas() {
     clearCanvas();
-    objects.forEach((value, key) => {
+    simulation.objects.forEach((value, key) => {
         value.draw(ctx);
     })
 }
@@ -152,7 +153,6 @@ function initialiseSimulation(selectElement) {
                 selectElement.dataset.lastSelected = selectElement.value;
 
 
-
                 // left
 
                 // <div style="height: 10%; background-color: #191A25;"><p>Object creation</p></div>
@@ -177,20 +177,28 @@ function initialiseSimulation(selectElement) {
                 // <button style="width: 90%; height: 80%; margin-left: 5%; margin-top: 2.5%;">+ New Force</button>
                 // </div>
 
-                break;
+                return {
+                    objects: new Map(),
+                    forces: new Map(),
+                    objectToForces: new Map(),
+                    forceToObjects: new Map(),
+                }
             case 'Projectile motion':
                 
                 selectElement.dataset.lastSelected = selectElement.value;
 
                 console.log('ballz');
 
-                let cannon = new Cannon();
+                projectileMotion.cannon = new Cannon(45, 10, 0);
+                projectileMotion.gravity = 9.81;
+                projectileMotion.airResistance = 1;
+
                 // intiialise projectile motion sim
 
                 let leftSidebar = document.getElementById('leftSidebar');
                 let rightSidebar = document.getElementById('rightSidebar');
 
-
+                // Initialise HTML
                 leftSidebar.innerHTML = `
                 
                 <div style="height: 10%; background-color: #191A25;"><p>Edit cannon</p></div>
@@ -210,7 +218,7 @@ function initialiseSimulation(selectElement) {
                             <input id="editCannonballSpeed" type="number" name="cannonballSpeed" value="${cannon.cannonballSpeed}">
 
                             <label for="editCannonHeight">Cannon height</label>
-                            <input id="editCannonHeight" type="number" name="cannonAngle" value="${cannon.angle}">
+                            <input id="editCannonHeight" type="number" name="cannonHeight" value="${cannon.height}">
                             
                         </div>
                     </div>
@@ -243,10 +251,10 @@ function initialiseSimulation(selectElement) {
                         <div class="propertyGrid">
 
                             <label for="editProjectileMass">Projectile mass</label>
-                            <input id="editProjectileMass" type="number" name="projectileMass">
+                            <input id="editProjectileMass" type="number" name="projectileMass" value="1">
 
-                            <label for="editProjectileSize">Projectile size</label>
-                            <input id="editProjectileSize" type="number" name="projectileSize">
+                            <label for="editProjectileRadius">Projectile size</label>
+                            <input id="editProjectileRadius" type="number" name="projectileRadius" value="10">
                             
                         </div>
                     </div>
@@ -256,13 +264,24 @@ function initialiseSimulation(selectElement) {
 
                 `;
 
+                return {
+                    cannon: new Cannon(45, 10, 0),
+                    gravity: 9.81,
+                    airResistance: 1,
+                    cannonBalls: []
+                };
 
-                break;
             case 'Momentum':
                 // momentum
                 break;
+            case 'Select sim':
+                // do nothing
+                break;
         }
 }
+
+initialiseSimulation('Create your own');
+
 
 // Event listeners
 
@@ -276,7 +295,7 @@ function initialiseSimulation(selectElement) {
 
     document.getElementById('selectSim').addEventListener('change', e => {
         const selectElement = document.getElementById('selectSim');
-        initialiseSimulation(selectElement);
+        simulation = initialiseSimulation(selectElement);
     });
 
 
@@ -286,7 +305,7 @@ function initialiseSimulation(selectElement) {
     document.getElementById('objectListContainer').addEventListener('click', e => {
         const btn = e.target.closest('button');
         if (!btn) return;
-        const obj = objects.get(btn.dataset.id);
+        const obj = simulation.objects.get(btn.dataset.id);
         obj[btn.dataset.action]();
     });
 
@@ -326,8 +345,8 @@ class GeneralSimObject {
 
         // Add to object maps
         this.ID = String(++GeneralSimObject.nextID);
-        objects.set(this.ID, this);
-        objectToForces.set(this, []);
+        simulation.objects.set(this.ID, this);
+        simulation.objectToForces.set(this, []);
         this.name = `Object ${this.ID}`;
 
         this.current = {
@@ -664,20 +683,20 @@ class GeneralSimObject {
 
 
         // Delete object from maps. It is then deleted as all references to it have been deleted.
-        objects.delete(this.ID);
+        simulation.objects.delete(this.ID);
 
-        const forces = objectToForces.get(this);
+        const forces = simulation.objectToForces.get(this);
         if (forces) {
             for (const force of forces) {
-                const objects = forceToObjects.get(force);
+                const objects = simulation.forceToObjects.get(force);
                 if (objects) {
-                    objects.delete(obj);
-                    if (objects.size === 0) forceToObjects.delete(force);
+                    simulation.objects.delete(obj);
+                    if (simulation.objects.size === 0) simulation.forceToObjects.delete(force);
                 }
             }
         }
 
-        objectToForces.delete(this);
+        simulation.objectToForces.delete(this);
         updateCanvas();
 
     }
@@ -693,8 +712,8 @@ class Force {
 
         // Add to object maps
         this.ID = String(++Force.nextID);
-        forces.set(this.ID, this);
-        forceToObjects.set(this, []);
+        simulation.forces.set(this.ID, this);
+        simulation.forceToObjects.set(this, []);
         this.name = `Force ${this.ID}`;
         this.clickObject = (e) => this.addObjectToThisForce(e);
         this.cachedObjects = [];
@@ -760,7 +779,7 @@ class Force {
             this.endTime = forceToCopy.endTime;
             this.ID = String(++Force.nextID);
             this.name = `Force ${this.ID} (copy of '${forceToCopy.name}')`;
-            forces.set(this.ID, this);
+
             
             // Write HTML
             
@@ -918,18 +937,18 @@ class Force {
         }
 
 
-        forces.delete(this.ID);
+        simulation.forces.delete(this.ID);
 
-        forceToObjects.delete(this);
+        simulation.forceToObjects.delete(this);
 
-        const objects = forceToObjects.get(this);
+        const objects = simulation.forceToObjects.get(this);
         if (!objects) return;
 
         for (const obj of objects) {
-            const forces = objectToForces.get(obj);
+            const forces = simulation.objectToForces.get(obj);
             if (forces) {
                 forces.delete(this);
-                if (forces.size === 0) objectToForces.delete(obj);
+                if (forces.size === 0) simulation.objectToForces.delete(obj);
             }
         }
         
@@ -942,13 +961,13 @@ class Force {
         const mouseY = canvas.clientHeight - (e.clientY - rect.top);
 
 
-        objects.forEach((value) => {
+        simulation.objects.forEach((value) => {
             if (value.isClicked(mouseX, mouseY)) { // Brute force O(n) method 🥱 works for few objects
-                if ((!(forceToObjects.get(this).includes(value)))) { // this is nested so we fewer comparisons are made. No point checking forceToObjects.get(this).includes(value) when value.isClicked(mouseX, mouseY) is false
+                if ((!(simulation.forceToObjects.get(this).includes(value)))) { // this is nested so we fewer comparisons are made. No point checking forceToObjects.get(this).includes(value) when value.isClicked(mouseX, mouseY) is false
                 
                     console.log(`Force '${this.name}' was added to object '${value.name}'`);
                     
-                    forceToObjects.get(this).push(value);
+                    simulation.forceToObjects.get(this).push(value);
                     objectToForces.get(value).push(this);
 
                     // draw outline to show which objects are affected
@@ -956,8 +975,8 @@ class Force {
 
                 } else { // object is clicked and it is affected by the force, in which case it is removed.
                     
-                    forceToObjects.get(this).splice(forceToObjects.get(this).indexOf(value), 1);
-                    objectToForces.get(value).splice(objectToForces.get(value).indexOf(this), 1);
+                    simulation.forceToObjects.get(this).splice(simulation.forceToObjects.get(this).indexOf(value), 1);
+                    simulation.objectToForces.get(value).splice(simulation.objectToForces.get(value).indexOf(this), 1);
             
                     // Update canvas by removing the outline from the object that was removed
 
@@ -986,7 +1005,7 @@ class Force {
         if (btn.innerHTML === "Click") {
             btn.innerHTML = "Save";
             canvas.addEventListener('click', this.clickObject);
-            forceToObjects.get(this).forEach(obj => {drawOutline(obj)});
+            simulation.forceToObjects.get(this).forEach(obj => {drawOutline(obj)});
 
         } else {
             // Done
@@ -1012,7 +1031,7 @@ class Projectile {
     constructor(launchAngle, launchVelocity) {
 
         this.mass = document.getElementById('editProjectileMass');
-        this.size = document.getElementById('editProjectileSize');
+        this.radius = document.getElementById('editProjectileRadius');
         this.launchAngle = launchAngle * (Math.PI / 180); // convert to rad
         this.launchVelocity = launchVelocity;
 
@@ -1031,8 +1050,8 @@ class Projectile {
             const dragForceY = airResistance * this.surfaceArea * (this.Vy ** 2);
 
             // sum resistive forces
-            this.Vx -= (dragForceX/this.mass) / 60 // dt is 1/60 s
-            this.Vy -= (dragForceY/this.mass) // 60
+            this.Vx -= Math.sign(this.Vx) * (dragForceX/this.mass) / 60 // dt is 1/60 s
+            this.Vy -= Math.sign(this.Vy) * (dragForceY/this.mass) /60 // 60
         }
 
             this.Vy -= (9.81 / 60);
@@ -1057,9 +1076,9 @@ class Projectile {
 class Cannon {
     
     constructor(cannonAngle, cannonballSpeed, cannonHeight) {
-        this.cannonAngle = cannonAngle;
+        this.angle = cannonAngle;
         this.cannonballSpeed = cannonballSpeed;
-        this.cannonHeight = cannonHeight;
+        this.height = cannonHeight;
     }
 
     draw() {
@@ -1079,16 +1098,14 @@ function detectCollision(a, b) {
     const dy = a.current.y - b.current.y;
     const dist = (dx ** 2) + (dy ** 2);
 
-    const vRel = ((a.Vx - b.Vx) ** 2) + ((a.Vy - b.Vy) ** 2)
-    return (dist <= (a.radius + b.radius) ** 2) && (vRel != 0); // simplified Pythagoras since sqrt() is slow 
+    return (dist <= (a.radius + b.radius) ** 2); // simplified Pythagoras since sqrt() is slow 
 }
 
 function resolveCollison(a, b) {
 
     // Perfectly elastic collision
-    console.log('collison');
-    console.log(a);
-    console.log(b);
+
+
     const dx = a.current.x - b.current.x;
     const dy = a.current.y - b.current.y;
     const dist = Math.sqrt((dx ** 2) + (dy ** 2));
@@ -1209,7 +1226,7 @@ function runSimulation(objects, objectToForces) {
 function playPauseSimulation() {
 
     if (!isRunning) {
-        runSimulation(objects, objectToForces);
+        runSimulation(simulation.objects, simulation.objectToForces);
     } else {
         pauseSimulation();
     }
@@ -1225,7 +1242,7 @@ function stopSimulation() {
     console.log('stop');
     pauseSimulation();
     clearCanvas();
-    objects.forEach(obj => {
+    simulation.objects.forEach(obj => {
         Object.keys(obj.initial).forEach(key => {
             obj.current[key] = obj.initial[key];
         })
