@@ -48,7 +48,7 @@
             <button type="button" data-action="stopSimulation" style="width: 75px; height: 75px; margin-left: 10px;">
                 <span style="font-size: 50px;" class="material-symbols-outlined">stop_circle</span>
             </button>
-            <button type="button" data-action="runSimulation" style="width: 75px; height: 75px; margin-left: 10px;"></button>
+            <button type="button" data-action="updateCanvas" style="width: 75px; height: 75px; margin-left: 10px;"></button>
             <button type="button" data-action="runSimulation" style="width: 75px; height: 75px; margin-left: 10px;"></button>
 
 
@@ -58,11 +58,11 @@
             <!-- Select sim -->
             <div style="width: 50%; height: 100%; display: flex; justify-content: center; align-items: center;">
                 <!-- Pre made sims-->
-                <select id="selectSim" data-lastSelected="Create your own" style="width: 75%; height: 50%;">
-                    <option selected>Select sim:</option>
+                <select id="selectSim" data-lastSelected="" style="width: 75%; height: 50%;">
+                    <option>Select sim:</option>
                     <option>Projectile motion</option>
                     <option>Momentum</option>
-                    <option>Create your own</option>
+                    <option selected>Create your own</option>
                 </select>
             </div>
 
