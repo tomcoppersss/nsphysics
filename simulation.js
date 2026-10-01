@@ -186,7 +186,7 @@ function initialiseSimulation(selectElement) {
 
                 sim = {
                     type: 'Projectle motion',
-                    cannon: new Cannon(45, 10, 10, 0),
+                    cannon: new Cannon(0, 10, 10, 10),
                     cannonBalls: [],
                     gravity: 9.81,
                     airResistance: 1,
@@ -199,7 +199,7 @@ function initialiseSimulation(selectElement) {
 
                 };
                 // intiialise projectile motion sim
-
+                console.log(sim.cannon);
                 // Initialise HTML
                 leftSidebar.innerHTML = `
                 
@@ -219,8 +219,11 @@ function initialiseSimulation(selectElement) {
                             <label for="editCannonballSpeed">Cannonball speed</label>
                             <input id="editCannonballSpeed" type="number" name="cannonballSpeed" value="${sim.cannon.cannonballSpeed}">
 
+                            <label for="editCannonX">Cannon X</label>
+                            <input id="editCannonX" type="number" name="cannonX" value="${sim.cannon.x}">
+
                             <label for="editCannonHeight">Cannon height</label>
-                            <input id="editCannonHeight" type="number" name="cannonHeight" value="${sim.cannon.height}">
+                            <input id="editCannonHeight" type="number" name="cannonY" value="${sim.cannon.y}">
                             
                         </div>
                     </div>
@@ -252,11 +255,11 @@ function initialiseSimulation(selectElement) {
                         </div>
                         <div class="propertyGrid">
 
-                            <label for="editProjectileMass">Projectile mass</label>
-                            <input id="editProjectileMass" type="number" name="projectileMass" value="1">
+                            <label for="editCannonballMass">Cannonball mass</label>
+                            <input id="editCannonballMass" type="number" name="projectileMass" value="1">
 
-                            <label for="editProjectileRadius">Projectile size</label>
-                            <input id="editProjectileRadius" type="number" name="projectileRadius" value="10">
+                            <label for="editCannonballRadius">Cannonball size</label>
+                            <input id="editCannonballRadius" type="number" name="projectileRadius" value="10">
                             
                         </div>
                     </div>
@@ -413,6 +416,13 @@ function drawOutline(obj) {
         simulation = initialiseSimulation(selectElement);
 
     });
+
+    canvas.addEventListener('click', e => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = (e.clientX - rect.left) / scale;
+        const mouseY = (canvas.clientHeight - (e.clientY - rect.top)) / scale;
+        console.log(mouseX, mouseY);
+    })
 
 
 
@@ -1113,12 +1123,12 @@ class Force {
 }
 
 
-class Projectile {
+class Cannonball {
 
     constructor(launchAngle, launchVelocity) {
 
-        this.mass = document.getElementById('editProjectileMass');
-        this.radius = document.getElementById('editProjectileRadius');
+        this.mass = document.getElementById('editCannonballMass');
+        this.radius = document.getElementById('editCannonballRadius');
         this.launchAngle = launchAngle * (Math.PI / 180); // convert to rad
         this.launchVelocity = launchVelocity;
 
@@ -1128,7 +1138,10 @@ class Projectile {
         this.Vy = this.launchVelocity * Math.sin(launchAngle);
 
         this.surfaceArea = Math.PI * this.size; // section normal to incoming airflow, or 1/2 the circumference
+
+        simulation.cannonballs.push(this);
     }
+
 
     updatePos() { 
 
@@ -1162,24 +1175,58 @@ class Projectile {
 
 class Cannon {
     
-    constructor(cannonAngle, cannonballSpeed, cannonHeight) {
-        this.angle = cannonAngle;
+    constructor(cannonAngle, cannonballSpeed, cannonX, cannonY) {
+        this.angle = cannonAngle; // degrees
         this.cannonballSpeed = cannonballSpeed;
-        this.height = cannonHeight;
-        this.image = new Image();
-        this.image.src = `https://ia801504.us.archive.org/32/items/cannon_202104/cannon.png`;
-        this.image.onload = () => {this.loaded = true; console.log('weihj');};
+        this.x = cannonX;
+        this.y = cannonY;
+        this.cannonLength = 40;
+        this.cannonHeight = 20;
+
+        // Ensure the balls have the correct starting position based on the cannon angle
+        this.ballX = this.pivot.x + (27.5 * Math.cos(cannonAngle));
+        this.ballY = this.pivot.y + (27.5 * Math.sin(cannonAngle));
+
+        console.log(this.ballX, this.ballY);
+        this.cannonImage = null;
+        this.pivot = {x: this.x + 12.5, y: this.y}; // point to rotate the cannon about, image pos = (10, this.height) Cannon relative pos to pivot = (-12.5, 0)
+
+        const img = new Image();
+        img.src = `https://ia801504.us.archive.org/32/items/cannon_202104/cannon.png`;
+        img.onload = () => {
+            // Create an offscreen canvas the same size as the image
+            const offscreen = document.createElement('canvas');
+            offscreen.width = img.width;
+            offscreen.height = img.height;
+            const offCtx = offscreen.getContext('2d');
+
+            // Flip vertically while drawing into it
+            offCtx.translate(0, img.height);
+            offCtx.scale(1, -1);
+            offCtx.drawImage(img, 0, 0);
+
+            this.cannonImage = offscreen;
+        };
+
+        this.draw(ctx);
     }
 
-    draw() {
-        if (!this.loaded) return;
+    draw(ctx) {
+
+        if (!this.cannonImage) return; // hasn't loaded
         // draw image
-        console.log('draw');
+
         ctx.save();
-        ctx.translate(0, canvas.height);
-        ctx.scale(1, -1);
-        ctx.drawImage(this.image, 10, 10, 100, 100);
+        ctx.translate(this.pivot.x, this.pivot.y); // rotation point is now at the cannon pivot
+        ctx.rotate(this.angle * Math.PI / 180); // radians
+        ctx.drawImage(this.cannonImage, -12.5, 0, this.cannonLength, this.cannonHeight);
         ctx.restore();
+
+        // draw pivot
+        ctx.fillStyle = '#000';
+        ctx.arc(this.pivot.x, this.pivot.y, 5, 0, 2*Math.PI);
+        ctx.fill();
+
     }
 
     fire() {
