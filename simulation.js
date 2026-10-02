@@ -92,7 +92,13 @@ function initialiseSimulation(selectElement) {
                         clearCanvas();
                         simulation.objects.forEach((value, key) => {
                             value.draw(ctx);
-                        })
+                        });
+                        const forceOverlay = document.getElementsByClassName('addObjectsToForceOverlay')[0];
+                        if (forceOverlay) {
+                            simulation.forceToObjects.get(simulation.forces.get(parseInt(forceOverlay.id))).forEach(object => {
+                                object.drawOutline();
+                            })
+                        };
                     },
 
                     playPauseSimulation() {
@@ -193,13 +199,33 @@ function initialiseSimulation(selectElement) {
 
                     updateCanvas() {
                         clearCanvas();
-                        this.cannon.draw();
-                        this.cannonBalls.forEach(ball => {ball.draw()});
+                        this.cannon.draw(ctx);
+                        this.cannonBalls.forEach(ball => {ball.draw(ctx)});
+                    },
+
+                    animate() {
+                        clearCanvas();
+                        this.cannon.draw(ctx);
+                        this.cannonballs.forEach(ball => {
+                            ball.updatePos();
+                            ball.draw(ctx);
+                            projectileHitWall(ball);
+                            }
+                        )
+
+                        for (let i = 0; i < this.cannonballs.length; i++) { // brute force O(n^2), works for few objects.
+                            for (let j = i+1; j < this.cannonballs.length; j++) {
+                                if (detectCollision(this.cannonballs[i], this.cannonballs[j])) {
+                                    resolveCollison(this.cannonballs[i], this.cannonballs[j]);
+                                }
+                            }
+                        }
+
                     }
 
                 };
                 // intiialise projectile motion sim
-                console.log(sim.cannon);
+
                 // Initialise HTML
                 leftSidebar.innerHTML = `
                 
@@ -217,7 +243,7 @@ function initialiseSimulation(selectElement) {
                             <input id="editCannonAngle" type="number" name="cannonAngle" value="${sim.cannon.angle}">
 
                             <label for="editCannonballSpeed">Cannonball speed</label>
-                            <input id="editCannonballSpeed" type="number" name="cannonballSpeed" value="${sim.cannon.cannonballSpeed}">
+                            <input id="editCannonballSpeed" type="number" name="cannonballSpeed" value="${Math.hypot(sim.cannon.cannonballVx, sim.cannon.cannonballVy)}">
 
                             <label for="editCannonX">Cannon X</label>
                             <input id="editCannonX" type="number" name="cannonX" value="${sim.cannon.x}">
@@ -369,12 +395,6 @@ function resizeCanvas() {
     worldHeight = canvas.height / scale;
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     simulation.updateCanvas();
-    const forceOverlay = document.getElementsByClassName('addObjectsToForceOverlay')[0];
-    if (forceOverlay) {
-        simulation.forceToObjects.get(simulation.forces.get(parseInt(forceOverlay.id))).forEach(object => {
-            object.drawOutline();
-        })
-    }
 }
 resizeCanvas();
 
@@ -1125,17 +1145,15 @@ class Force {
 
 class Cannonball {
 
-    constructor(launchAngle, launchVelocity) {
+    constructor(posX, posY, Vx, Vy) {
 
         this.mass = document.getElementById('editCannonballMass');
         this.radius = document.getElementById('editCannonballRadius');
-        this.launchAngle = launchAngle * (Math.PI / 180); // convert to rad
-        this.launchVelocity = launchVelocity;
 
-        this.x = Number();
-        this.y = Number();
-        this.Vx = this.launchVelocity * Math.cos(launchAngle);
-        this.Vy = this.launchVelocity * Math.sin(launchAngle);
+        this.x = posX;
+        this.y = posY;
+        this.Vx = Vx;
+        this.Vy = Vy;
 
         this.surfaceArea = Math.PI * this.size; // section normal to incoming airflow, or 1/2 the circumference
 
@@ -1176,12 +1194,16 @@ class Cannonball {
 class Cannon {
     
     constructor(cannonAngle, cannonballSpeed, cannonX, cannonY) {
+
         this.angle = cannonAngle; // degrees
-        this.cannonballSpeed = cannonballSpeed;
+        this.cannonballVx = cannonballSpeed * Math.cos(this.angle * Math.PI / 180);
+        this.cannonballVy = cannonballSpeed * Math.sin(this.angle * Math.PI / 180);
         this.x = cannonX;
         this.y = cannonY;
+
         this.cannonLength = 40;
         this.cannonHeight = 20;
+        this.pivot = {x: this.x + 12.5, y: this.y}; // point to rotate the cannon about, image pos = (10, this.height) Cannon relative pos to pivot = (-12.5, 0)
 
         // Ensure the balls have the correct starting position based on the cannon angle
         this.ballX = this.pivot.x + (27.5 * Math.cos(cannonAngle));
@@ -1189,7 +1211,7 @@ class Cannon {
 
         console.log(this.ballX, this.ballY);
         this.cannonImage = null;
-        this.pivot = {x: this.x + 12.5, y: this.y}; // point to rotate the cannon about, image pos = (10, this.height) Cannon relative pos to pivot = (-12.5, 0)
+
 
         const img = new Image();
         img.src = `https://ia801504.us.archive.org/32/items/cannon_202104/cannon.png`;
@@ -1227,10 +1249,23 @@ class Cannon {
         ctx.arc(this.pivot.x, this.pivot.y, 5, 0, 2*Math.PI);
         ctx.fill();
 
+        ctx.arc(this.pivot.x + 25, this.pivot.y + 7.5, 4, 0, 2*Math.PI);
+        ctx.fill();
+
+    }
+
+    determineBallPos(cannonAngle, pivot) {
+        // position vector from pivot to cannon muzzle = (25, 7.5)
+
+        const relX = (25 * Math.cos(cannonAngle)) + (7.5 * Math.sin(cannonAngle));
+        const relY = (25 * Math.sin(cannonAngle)) - (7.5 * Math.cos(cannonAngle));
+
+        this.ballX = pivot.x + relX;
+        this.ballY = pivot.y + relY;
     }
 
     fire() {
-
+        new Cannonball(this.ballX, this.ballY, this.cannonballVx, this.cannonballVy);
     }
 
 }
