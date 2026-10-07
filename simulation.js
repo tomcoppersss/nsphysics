@@ -27,7 +27,7 @@ function initialiseSimulation(selectElement) {
         case selectElement.dataset.lastSelected:
             postSelectionLogic();
 
-            break; // do nothing if select same one
+            return; // do nothing if select same one
 
         case 'Create your own':
             // initialise empty general sim
@@ -113,9 +113,9 @@ function initialiseSimulation(selectElement) {
 
                 playPauseSimulation() {
                     if (!isRunning) {
-                        simulation.runSimulation(simulation.objects, simulation.objectToForces);
+                        this.runSimulation(this.objects, this.objectToForces);
                     } else {
-                        simulation.pauseSimulation();
+                        this.pauseSimulation();
                     }
                 },
 
@@ -182,9 +182,9 @@ function initialiseSimulation(selectElement) {
 
                 stopSimulation() {
                     console.log('stop');
-                    simulation.pauseSimulation();
+                    this.pauseSimulation();
                     clearCanvas();
-                    simulation.objects.forEach(obj => {
+                    this.objects.forEach(obj => {
                         Object.keys(obj.initial).forEach(key => {
                             obj.current[key] = obj.initial[key];
                         })
@@ -387,13 +387,13 @@ function initialiseSimulation(selectElement) {
 
             document.getElementById('cannonProperties').addEventListener('input', e => {
                     if (e.target.tagName === 'INPUT') {
-                    if (e.target.name === 'angle' && !((0 <= Number(e.target.value)) && (Number(e.target.value) <= 90))) {return};
-                    sim.cannon[e.target.name] = Number(e.target.value);
-                    sim.cannon.angleRadians = sim.cannon.angle * Math.PI / 180;
-                    sim.cannon.cannonballVx = sim.cannon.cannonballSpeed * Math.cos(sim.cannon.angle * Math.PI / 180);
-                    sim.cannon.cannonballVy = sim.cannon.cannonballSpeed * Math.sin(sim.cannon.angle * Math.PI / 180);
-                    sim.cannon.determineBallPos();
-                    sim.updateCanvas();
+                        if (e.target.name === 'angle' && !((0 <= Number(e.target.value)) && (Number(e.target.value) <= 90))) return;
+                            sim.cannon = new Cannon( // angle speed x y
+                                document.getElementById('editCannonAngle'),
+                                document.getElementById('editCannonballSpeed'),
+                                document.getElementById('editCannonX'),
+                                document.getElementById('editCannonHeight')
+                            )
                 }
             })
 
@@ -432,6 +432,7 @@ function initialiseSimulation(selectElement) {
 
 
 simulation = initialiseSimulation(document.getElementById('selectSim'));
+console.log(simulation);
 document.getElementById('selectSim').value = 'Select sim:';
 
 
@@ -544,7 +545,6 @@ function drawOutline(obj) {
 
     document.getElementById('selectSim').addEventListener('change', e => {
         const selectElement = document.getElementById('selectSim');
-        simulation = null;
         simulation = initialiseSimulation(selectElement);
 
     });
@@ -781,7 +781,7 @@ class GeneralSimObject {
 
     saveChanges() {
         // Captures inputs from the edit menu and saves them
-        pauseSimulation();
+        simulation.pauseSimulation();
         document.getElementById(`object${this.ID}PropertyGrid`).querySelectorAll(`input, select`).forEach(element => {
             switch (element.name) {
                 case 'x': case 'y': case 'Vx': case 'Vy':
@@ -1371,6 +1371,8 @@ class Cannon {
         this.draw(ctx);
     }
 
+
+
     draw(ctx) {
 
         console.log('draw');
@@ -1410,6 +1412,7 @@ class Cannon {
 
         new Cannonball(this.ballX, this.ballY, this.cannonballVx, this.cannonballVy);
         if (!isRunning) {simulation.runSimulation()};
+        
     }
 
 }
