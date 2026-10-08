@@ -432,7 +432,6 @@ function initialiseSimulation(selectElement) {
 
 
 simulation = initialiseSimulation(document.getElementById('selectSim'));
-console.log(simulation);
 document.getElementById('selectSim').value = 'Select sim:';
 
 
@@ -445,8 +444,9 @@ let worldHeight = canvas.height / scale;
 
 // Taken from https://medium.com/@doomgoober/understanding-html-canvas-scaling-and-sizing-c04925d9a830. Used to fix canvas blurriness.
 
-    const originalHeight = canvas.height;
     const originalWidth = canvas.width;
+    const originalHeight = canvas.height;
+
     render();
 
     function render() {
@@ -545,7 +545,9 @@ function drawOutline(obj) {
 
     document.getElementById('selectSim').addEventListener('change', e => {
         const selectElement = document.getElementById('selectSim');
+        if (selectElement.value === "Select sim:") return;
         simulation = initialiseSimulation(selectElement);
+        console.log(simulation);
 
     });
 
@@ -1289,7 +1291,7 @@ class Cannonball {
             const dragForceX = simulation.airResistance * this.surfaceArea * (this.current.Vx ** 2);
             const dragForceY = simulation.airResistance * this.surfaceArea * (this.current.Vy ** 2);
 
-            // sum resistive forces
+            // resist current motion with air resistance
             this.current.Vx -= Math.sign(this.current.Vx) * (dragForceX/this.mass) / 60 // dt is 1/60 s
             this.current.Vy -= Math.sign(this.current.Vy) * (dragForceY/this.mass) / 60
         }
@@ -1442,8 +1444,7 @@ function resolveCollison(a, b) {
 
     if (vRel >= 0) return; // objects are moving away from each other, no need to handle collision
 
-    const restitution = 0.65;
-    const impulse = -(1 + restitution) * (2 * vRel) / (a.mass + b.mass);
+    const impulse = (2 * vRel) / (a.mass + b.mass);
     // decreases a and increases b so they move apart
 
     a.current.Vx -= impulse * b.mass * nx;
@@ -1462,4 +1463,3 @@ function resolveCollison(a, b) {
     }
 
 }
-
