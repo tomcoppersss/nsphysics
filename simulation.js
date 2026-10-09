@@ -5,8 +5,13 @@ let simulationID;
 let isRunning = false;
 
 let canvas = document.getElementById('canvas');
+
 const ctx = canvas.getContext('2d');
 const scale = 3;
+
+let worldWidth = canvas.width / scale;
+let worldHeight = canvas.height / scale;
+
 
 // General sim
 
@@ -138,7 +143,7 @@ function initialiseSimulation(selectElement) {
                         const secondsElapsed = timestamp / 1000; // timestamp is in ms but time inputs are in s
 
                         // clear canvas
-                        ctx.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
+                        ctx.clearRect(0, 0, worldWidth, worldHeight);
                     
                         for (let i = 0; i < objectEntries.length; i++) {
                             // sum resultant force
@@ -388,12 +393,28 @@ function initialiseSimulation(selectElement) {
             document.getElementById('cannonProperties').addEventListener('input', e => {
                     if (e.target.tagName === 'INPUT') {
                         if (e.target.name === 'angle' && !((0 <= Number(e.target.value)) && (Number(e.target.value) <= 90))) return;
-                            sim.cannon = new Cannon( // angle speed x y
-                                document.getElementById('editCannonAngle'),
-                                document.getElementById('editCannonballSpeed'),
-                                document.getElementById('editCannonX'),
-                                document.getElementById('editCannonHeight')
-                            )
+                            // angle speed x y
+                        switch (e.target.name) {
+                            case 'angle':
+                                if  (!(0 <= Number(e.target.value)) && (Number(e.target.value) <= 90)) return;
+                                sim.cannon.angle = e.target.value;
+                                sim.cannon.angleRadians = sim.cannon.angle * Math.PI / 180;
+                                break;
+                            case 'cannonballSpeed':
+                                sim.cannon.cannonballVx = e.target.value * Math.cos(this.angle * Math.PI / 180);
+                                sim.cannon.cannonballVy = e.target.value * Math.sin(this.angle * Math.PI / 180);
+                                break;
+                            case 'cannonX':
+                                sim.cannon.x = Number(e.target.value);
+                                sim.cannon.pivot.x = 12.5 + sim.cannon.x;
+                                break;
+                            case 'cannonY':
+                                sim.cannon.y = Number(e.target.value);
+                                sim.cannon.pivot.y = sim.cannon.y;
+                                break;
+                        }
+                        sim.cannon.determineBallPos();
+                        sim.updateCanvas();
                 }
             })
 
@@ -438,9 +459,6 @@ document.getElementById('selectSim').value = 'Select sim:';
 
 // Canvas initialisation 
 
-
-let worldWidth = canvas.width / scale;
-let worldHeight = canvas.height / scale;
 
 // Taken from https://medium.com/@doomgoober/understanding-html-canvas-scaling-and-sizing-c04925d9a830. Used to fix canvas blurriness.
 
@@ -515,7 +533,7 @@ function resizeCanvas() {
 resizeCanvas();
 
 function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
+    ctx.clearRect(0, 0, worldWidth, worldHeight);
 }
 
 function drawOutline(obj) {
@@ -1377,7 +1395,6 @@ class Cannon {
 
     draw(ctx) {
 
-        console.log('draw');
         if (!this.cannonImage) return; // hasn't loaded
         // draw image
 
@@ -1395,7 +1412,7 @@ class Cannon {
         ctx.arc(this.ballX, this.ballY, 4, 0, 2*Math.PI);
         ctx.fill();
         ctx.closePath();
-
+        console.log(this);
     }
 
     determineBallPos() {
