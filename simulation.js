@@ -5,17 +5,16 @@ let simulationID;
 let isRunning = false;
 
 let canvas = document.getElementById('canvas');
-
 const ctx = canvas.getContext('2d');
-const scale = 3;
 
-let worldWidth = canvas.width / scale;
-let worldHeight = canvas.height / scale;
 
+let worldWidth = 432;
+let worldHeight = 243;
+let scale;
 
 // General sim
 
-function initialiseSimulation(selectElement) {
+function initialiseSimulation(selectElement, oldSimState) {
 
     let leftSidebar = document.getElementById('leftSidebar');
     let rightSidebar = document.getElementById('rightSidebar');
@@ -32,7 +31,7 @@ function initialiseSimulation(selectElement) {
         case selectElement.dataset.lastSelected:
             postSelectionLogic();
 
-            return; // do nothing if select same one
+            return oldSimState; // do nothing if select same one
 
         case 'Create your own':
             // initialise empty general sim
@@ -237,10 +236,10 @@ function initialiseSimulation(selectElement) {
             sim = {
 
                 type: 'Projectle motion',
-                cannon: new Cannon(45, 100, 10, 10),
+                cannon: new Cannon(45, 50, 10, 10),
                 cannonballs: [],
                 gravity: 9.81,
-                airResistance: 0.0005,
+                airResistance: 0,
                 showVectors: false,
                 showProjectilePath: false,
 
@@ -256,7 +255,7 @@ function initialiseSimulation(selectElement) {
                     isRunning = true;
 
                     const animate = () => {
-                        console.log(simulationID);
+
                         clearCanvas();
                         this.cannon.draw(ctx);
                         this.cannonballs.forEach(ball => {
@@ -317,14 +316,21 @@ function initialiseSimulation(selectElement) {
 
             // Initialise HTML
             leftSidebar.innerHTML = `
-            <div style="height: 10%; max-height: 10%; background-color: #191A25;"><p style="margin: 0">Edit cannon</p></div>
+            <div style="height: 10%; max-height: 10%; background-color: #191A25;">
+            
+            <div style="height: 10%; display: flex; flex-direction: column; margin-left: 10px;">
+                <p style="width: 100%; height: calc(100% / 3);">Edit simulation</p>
+                <p>All units should be given in SI units.</p>
+            </div>
+            
+            </div>
 
-            <div style="height: 80%; max-height: 80%; overflow-y: scroll; display: flex; flex-direction: column;">
+            <div style="height: 80%; max-height: 80%; overflow-y: scroll; display: flex; flex-direction: column; margin-left: 10px;">
                 
+                <p style="width: 100%;">Edit cannon</p>
+            
                 <div style="height: calc(100% / 3);">
-                    <div style="height: 10%;">
-                        <p>Edit cannon</p>
-                    </div>
+        
                     <div id="cannonProperties" class="propertyGrid">
 
                         <label for="editCannonAngle">Cannon angle</label>
@@ -351,7 +357,9 @@ function initialiseSimulation(selectElement) {
                         <label for="editGravity">Gravity</label>
                         <input id="editGravity" type="number" name="gravity" value="${sim.gravity}">
 
-                        <label for="editAirResistance">Air resistance</label>
+                        <label for="editAirResistance">Air resistance 
+                            <button class="tooltip" style="width: 16px; height: 16px;" data-text="Drag force coeffecient. Use values between 0 and 0.001">i</button>
+                        </label>
                         <input editAirResistance="edit" type="number" name="airResistance" value="${sim.airResistance}">
 
                         <label for="showVectors">Show vectors</label>
@@ -392,24 +400,26 @@ function initialiseSimulation(selectElement) {
 
             document.getElementById('cannonProperties').addEventListener('input', e => {
                     if (e.target.tagName === 'INPUT') {
-                        if (e.target.name === 'angle' && !((0 <= Number(e.target.value)) && (Number(e.target.value) <= 90))) return;
-                            // angle speed x y
+                        let value = Number(e.target.value);
+                        if (e.target.value === "") {value = 0};
                         switch (e.target.name) {
                             case 'angle':
-                                if  (!(0 <= Number(e.target.value)) && (Number(e.target.value) <= 90)) return;
-                                sim.cannon.angle = e.target.value;
+                                if  (!(0 <= value) && (value <= 90)) return;
+                                sim.cannon.angle = value;
                                 sim.cannon.angleRadians = sim.cannon.angle * Math.PI / 180;
+                                sim.cannon.cannonballVx = sim.cannon.cannonballSpeed * Math.cos(sim.cannon.angleRadians);
+                                sim.cannon.cannonballVy = sim.cannon.cannonballSpeed * Math.sin(sim.cannon.angleRadians);
                                 break;
                             case 'cannonballSpeed':
-                                sim.cannon.cannonballVx = e.target.value * Math.cos(this.angle * Math.PI / 180);
-                                sim.cannon.cannonballVy = e.target.value * Math.sin(this.angle * Math.PI / 180);
+                                sim.cannon.cannonballVx = value * Math.cos(sim.cannon.angleRadians);
+                                sim.cannon.cannonballVy = value * Math.sin(sim.cannon.angleRadians);
                                 break;
                             case 'cannonX':
-                                sim.cannon.x = Number(e.target.value);
+                                sim.cannon.x = value;
                                 sim.cannon.pivot.x = 12.5 + sim.cannon.x;
                                 break;
                             case 'cannonY':
-                                sim.cannon.y = Number(e.target.value);
+                                sim.cannon.y = value;
                                 sim.cannon.pivot.y = sim.cannon.y;
                                 break;
                         }
@@ -421,15 +431,11 @@ function initialiseSimulation(selectElement) {
             document.getElementById('simulationProperties').addEventListener('input', e => {
                 if (e.target.tagName === 'INPUT') {
                     if (e.target.type === 'checkbox') {
-                        console.log('check');
                         sim[e.target.name] = e.target.checked;
                         return;
                     }
-                    console.log('mate');
                     sim[e.target.name] = Number(e.target.value);
-
                 }
-
             })
 
             sim.runSimulation();
@@ -452,7 +458,7 @@ function initialiseSimulation(selectElement) {
 }
 
 
-simulation = initialiseSimulation(document.getElementById('selectSim'));
+simulation = initialiseSimulation(document.getElementById('selectSim'), null);
 document.getElementById('selectSim').value = 'Select sim:';
 
 
@@ -525,8 +531,7 @@ function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
-    worldWidth = canvas.width / scale;
-    worldHeight = canvas.height / scale;
+    scale = Math.min(canvas.width / worldWidth, canvas.height / worldHeight);
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     simulation.updateCanvas();
 }
@@ -564,7 +569,7 @@ function drawOutline(obj) {
     document.getElementById('selectSim').addEventListener('change', e => {
         const selectElement = document.getElementById('selectSim');
         if (selectElement.value === "Select sim:") return;
-        simulation = initialiseSimulation(selectElement);
+        simulation = initialiseSimulation(selectElement, simulation);
         console.log(simulation);
 
     });
@@ -1288,11 +1293,10 @@ class Cannonball {
             y: posY,
             Vx: Vx,
             Vy: Vy,
-        }
-
+        };
 
         this.surfaceArea = Math.PI * this.radius; // section normal to incoming airflow, or 1/2 the circumference
-        this.path = [];
+        this.path = [{x: posX, y: posY}];
         this.landed = false;
         simulation.cannonballs.push(this);
 
@@ -1319,14 +1323,15 @@ class Cannonball {
         this.current.x += this.current.Vx / 60;
         this.current.y += this.current.Vy / 60;
 
-        this.path.push({x: this.current.x, y: this.current.y});
+
+        if (simulationID % 3 === 0) {this.path.push({x: this.current.x, y: this.current.y})};
 
 
     }
 
     draw(ctx) {
 
-        ctx.fillStyle = "#222222";
+        ctx.fillStyle = "#000";
         ctx.beginPath();
         ctx.arc(this.current.x, this.current.y, this.radius, 0, 2 * Math.PI);
         ctx.fill();
@@ -1335,8 +1340,7 @@ class Cannonball {
     }
 
     drawPath(ctx) {
-        console.log('path');
-        console.log(this.path);
+
         ctx.beginPath();
         ctx.moveTo(this.path[0].x, this.path[0].y)
         for (const point of this.path) {
@@ -1356,6 +1360,7 @@ class Cannon {
 
         this.angle = cannonAngle; // degrees
         this.angleRadians = cannonAngle * Math.PI / 180;
+        this.cannonballSpeed = cannonballSpeed;
         this.cannonballVx = cannonballSpeed * Math.cos(this.angle * Math.PI / 180);
         this.cannonballVy = cannonballSpeed * Math.sin(this.angle * Math.PI / 180);
         this.x = cannonX;
@@ -1412,7 +1417,7 @@ class Cannon {
         ctx.arc(this.ballX, this.ballY, 4, 0, 2*Math.PI);
         ctx.fill();
         ctx.closePath();
-        console.log(this);
+
     }
 
     determineBallPos() {
