@@ -73,6 +73,7 @@ button {
         background-color: #2D3142;
     }
 
+
 /* Webkit */
 
 ::-webkit-scrollbar {
@@ -178,4 +179,52 @@ button {
         z-index: 10;
         }
 
-   
+
+.tooltip {
+    display: inline-grid;
+    place-items: center;
+    position: relative;
+}
+
+.tooltip::before {
+    content: attr(data-text);
+    font-size: 12px;
+    position: absolute;
+    transform: translateY(-55px);
+    padding: 0.5em 1em;
+    border-radius: 10px;
+    min-width: 100px;
+    max-width: 100px;
+    color: #F2F3F7;
+    background-color: #0F111A;
+    opacity: 0;
+}
+
+.tooltip:hover::before {
+    opacity: 1;
+}
+
+.tooltip::after {
+    content: '';
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #0F111A;
+    position: absolute;
+    transform: translateY(-15px);
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+
+.simulationButton {
+    width: 75px; 
+    height: 75px; 
+    border-radius: 5px;
+    margin-left: 10px;
+}
