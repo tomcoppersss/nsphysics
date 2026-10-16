@@ -1,3 +1,16 @@
+/* Variables */
+
+:root {
+    /* dark mode */
+    --primary-bg: #1E1F2B;
+    --dark-bg: #191A25;
+    --primary-text: #F2F3F7;
+    --header: #14151F;
+    --canvas: #14151F;
+    --input-colour: #2D3142; 
+}
+
+
 /* Elements */
 
 * {
@@ -7,7 +20,7 @@
 
 html, body {
     height: 100vh;
-    background-color: #1E1F2B;
+    background-color: var(--primary-bg);
     overflow-x: hidden;
     margin: 0px;
     padding: 0px;
@@ -55,7 +68,7 @@ input[type="checkbox"] {
     }   /* gets rid of unwanted up/down arrow on inputs */
 
     input:focus, select:focus {
-    background-color: #474B5F;
+        background-color: #474B5F;
     } /* changes colour when clicked */
 
 
@@ -103,7 +116,7 @@ button {
     .objectMenu {
         width: 100%; 
         height: 80px; 
-        background-color: #1E1F2B;
+        background-color: var(--primary-bg);
         display: grid;
         grid-template-columns: auto;
         grid-template-rows: calc(100% / 3) calc(100% * 2 / 3);
@@ -195,7 +208,7 @@ button {
     border-radius: 10px;
     min-width: 100px;
     max-width: 100px;
-    color: #F2F3F7;
+    color: var(--primary-text);
     background-color: #0F111A;
     opacity: 0;
 }
@@ -227,4 +240,18 @@ button {
     height: 75px; 
     border-radius: 5px;
     margin-left: 10px;
+}
+
+
+.sidebar {
+    background-color: var(--primary-bg);
+    width: 15%;
+
+    overflow-x: auto;
+}
+
+.sidebarEnd {
+
+    height: 10%; 
+    background-color: var(--dark-bg);
 }
